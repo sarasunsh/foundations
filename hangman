@@ -1,0 +1,93 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jan 07 15:18:20 2015
+@author: SSunshine
+"""
+ 
+import requests
+import random
+import string
+ 
+word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+#this isn't a perfect source since many of these words are weird/uncommon
+response = requests.get(word_site)
+WORDS = response.content.splitlines() # produces list of words
+guess_num = 10 # can set number of guesses allotted
+ 
+def new_game():
+    global word, tracker, guesses, done
+    
+    print 'Welcome to Sunshine Hangman!'    
+    guesses = 0
+    done = False        
+    again = True
+    while again:
+        word = random.choice(WORDS)
+        if not word[0].isupper(): # check if word is proper noun; if so, pick again
+            again = False
+ 
+    tracker = [0] * len(word)
+ 
+    blank_cntr = 0
+    while blank_cntr < len(word):
+        print '_', 
+        blank_cntr += 1
+    print ""
+ 
+def restart_game():
+    global done
+    
+    restart = raw_input("If so, enter Y. Otherwise, enter any other key: ")
+    if restart == 'y':
+        new_game()
+        print word
+    else:
+        done = True   
+        
+new_game()
+print word
+while not done:
+    # if they've exceeded allotted guesses, end the game & give restart option
+    if guesses > guess_num - 1:
+        print "You got hung!"
+        print ""
+        print "Would you like to try again?"
+        restart_game()
+    # if gameplay is still ongoing...
+    else:
+        print ""
+        ltr = raw_input('Guess a letter: ').lower()
+        # way to improve game would be option to guess whole word at any time a la Wheel of Fortune
+        if len(ltr) == 1 and ltr in string.ascii_lowercase:         
+            c_cntr = -1
+            if ltr not in word:
+                guesses += 1
+            else:
+                for c in word: 
+                    c_cntr += 1 
+                    if c == ltr and tracker[c_cntr] == 0:
+                        tracker[c_cntr] = ltr
+                    elif c == ltr and tracker[c_cntr] == ltr:
+                        print 'You already guessed that, silly'                    
+                        guesses +=1 
+        else:
+            print "Now now, I told you to guess a letter."
+            guesses +=1
+ 
+        # draw the hangman board        
+        b_cntr = -1        
+        for b in tracker:
+            b_cntr += 1
+            if b == 0:
+                print "_",
+            else:
+                print tracker[b_cntr],
+        print ""        
+        print "Attempts: "+str(guesses) 
+        
+        #check if all the blanks have been filled in        
+        if 0 not in tracker:
+            print "You got the word!"
+            print ""
+            print "Would you like to try again?"
+            restart_game()
