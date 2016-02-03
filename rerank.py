@@ -11,6 +11,7 @@ Created on Wed Feb 03 15:02:56 2016
 
 from collections import Counter
 from copy import deepcopy
+import csv
 
 def redo_ranking(test):
     count = Counter()
@@ -34,4 +35,22 @@ def redo_ranking(test):
             output[j] = dicty[k]
         
     return output
+
+def get_data(reader):
+    
+#    reader = csv.reader(open('data_file'))
+    PT_d = {}
+    
+    for row in reader:
+        key = row[0]
+        value = []
+        for ranking in row[3:]:
+            try:
+                value.append(int(ranking))
+            except ValueError:
+                value.append(ranking)
+                
+        PT_d[key] = value
+        
+    return PT_d
 
